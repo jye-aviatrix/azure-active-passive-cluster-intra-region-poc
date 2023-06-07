@@ -16,4 +16,5 @@ resource "azurerm_storage_blob" "loader" {
   type                   = "Block"
   content_type           = "text/x-python"
   source                 = local_file.loader.filename
+  content_md5            = local_file.loader.content_md5
 }
