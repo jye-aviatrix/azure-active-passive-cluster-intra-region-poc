@@ -107,10 +107,10 @@ import json
 try:
     # Read the JSON file
     with open('/etc/bootstrap/nodes_info.json', 'r') as file:
-        json_data = json.load(file)
+        nodes_info_json_data = json.load(file)
 
     # Get the list of node names
-    node_names = list(json_data.keys())
+    node_names = list(nodes_info_json_data.keys())
 
     # Print the list of node names
     logging.info("List of nodes in cluster: %s", node_names)
