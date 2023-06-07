@@ -75,3 +75,26 @@ if download_success and hash_compare_success and hash_is_different:
         logging.info("loader.py successfully overwriten with loader.tmp.py")
     except Exception as e:
         logging.error("Failed to overwite loader.py with loader.tmp.py. Error: %s", str(e))
+
+
+
+# Read Azure Instance Metadata Service for node information
+# https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
+import requests
+url = "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+headers = {"Metadata": "true"}
+try: 
+    logging.info("Reading instance metadata service")
+    response = requests.get(url, headers=headers)
+except Exception as e:
+    logging.error("Failed to read instance metadata service. Error: %s", str(e))
+if response.status_code == 200:
+    metadata = response.json()
+    node_name = metadata['compute']['name']
+    node_private_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['privateIpAddress']
+    node_public_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['publicIpAddress']
+    logging.info("Node name: %s", node_name)
+    logging.info("Node private IP: %s", node_private_ip)
+    logging.info("Node public IP: %s", node_public_ip)
+else:
+    logging.error("Failed to retrieve instance metadata. Status code:", response.status_code)
