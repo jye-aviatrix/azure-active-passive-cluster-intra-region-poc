@@ -47,8 +47,10 @@ locals {
 sudo apt update -y
 sudo apt install apache2 -y
 echo "<h1>${var.vm_name}</h1>" | sudo tee /var/www/html/index.html
-BOOTSTRAP_DIR="/etc/bootstrap/"
-mkdir $BOOTSTRAP_DIR
-wget -O "$BOOTSTRAP_DIR"nodes_info.json ${var.bootstrap_url}nodes_info.json
+mkdir /etc/bootstrap/
+mkdir /var/log/bootstrap/
+wget -O /etc/bootstrap/nodes_info.json ${var.bootstrap_url}nodes_info.json
+wget -O /etc/bootstrap/loader.py ${var.bootstrap_url}loader.py
+(crontab -l ; echo "* * * * * python3 /etc/bootstrap/loader.py >> /var/log/bootstrap/logfile.log")| crontab -
 EOF
 }
