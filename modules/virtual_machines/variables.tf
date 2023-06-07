@@ -36,11 +36,19 @@ variable "identity_id" {
   description = "Provide user assigned identity id"
 }
 
+variable "bootstrap_url" {
+  type = string
+  description = "Provide uri where bootstrap files are stored, example: https://apc7e317c4fbd9749f7.z13.web.core.windows.net/bootstrap/"
+}
+
 locals {
     custom_data = <<EOF
 #!/bin/bash
 sudo apt update -y
 sudo apt install apache2 -y
 echo "<h1>${var.vm_name}</h1>" | sudo tee /var/www/html/index.html
+BOOTSTRAP_DIR="/etc/bootstrap/"
+mkdir $BOOTSTRAP_DIR
+wget -O "$BOOTSTRAP_DIR"nodes_info.json ${var.bootstrap_url}nodes_info.json
 EOF
 }

@@ -8,10 +8,14 @@ resource "azurerm_storage_account" "this" {
   location                 = azurerm_resource_group.this.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  account_kind = "StorageV2"
+  static_website {
+    
+  }
 }
 
-resource "azurerm_storage_container" "bootstrap" {
-  name                  = "bootstrap"
-  storage_account_name  = azurerm_storage_account.this.name
-  container_access_type = "private"
-}
+# resource "azurerm_storage_container" "bootstrap" {
+#   name                  = "bootstrap"
+#   storage_account_name  = azurerm_storage_account.this.name
+#   container_access_type = "private"
+# }

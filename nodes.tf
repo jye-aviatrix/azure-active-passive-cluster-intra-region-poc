@@ -8,4 +8,5 @@ module "nodes" {
   public_key_file      = var.public_key_file
   network_interface_id = module.network_interfaces[each.value].network_interface_id
   identity_id = azurerm_user_assigned_identity.this.id
+  bootstrap_url = "${azurerm_storage_account.this.primary_web_endpoint}bootstrap/"
 }
