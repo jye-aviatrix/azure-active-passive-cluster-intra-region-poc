@@ -8,7 +8,6 @@ resource "azurerm_public_ip" "this" {
   resource_group_name = var.resource_group_name
   location            = var.region
   allocation_method   = "Static"
-  tags = local.tags
 }
 
 resource "azurerm_network_interface" "this" {
@@ -23,7 +22,6 @@ resource "azurerm_network_interface" "this" {
     public_ip_address_id = azurerm_public_ip.this.id
     # private_ip_address = var.private_ip_address
   }
-  tags = local.tags
 }
 
 resource "azurerm_network_security_group" "this" {
@@ -89,7 +87,6 @@ resource "azurerm_network_security_group" "this" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-  tags = local.tags
 }
 
 resource "azurerm_network_interface_security_group_association" "this" {
