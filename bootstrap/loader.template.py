@@ -55,10 +55,10 @@ hash_compare_success = False
 hash_is_different = False
 try:
     if compare_file_hashes("/etc/bootstrap/loader.py", "/etc/bootstrap/loader.tmp.py"):           
-        logging.info("File loader.py and loader.tmp.py is identical")
+        logging.info("File loader.py and loader.tmp.py is identical, no need to overwrite.")
         hash_compare_success = True
     else:
-        logging.info("File loader.py and loader.tmp.py is different")
+        logging.info("File loader.py and loader.tmp.py is different.")
         hash_compare_success = True
         hash_is_different = True        
 except Exception as e:
@@ -72,5 +72,6 @@ if download_success and hash_compare_success and hash_is_different:
     try:
         logging.info("Try to overwite loader.py with loader.tmp.py")
         shutil.copy2("/etc/bootstrap/loader.tmp.py", "/etc/bootstrap/loader.py")
+        logging.info("loader.py successfully overwriten with loader.tmp.py")
     except Exception as e:
         logging.error("Failed to overwite loader.py with loader.tmp.py. Error: %s", str(e))
