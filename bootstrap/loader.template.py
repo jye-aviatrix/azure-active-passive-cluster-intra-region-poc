@@ -80,6 +80,7 @@ if download_success and hash_compare_success and hash_is_different:
 
 # Read Azure Instance Metadata Service for node information
 # https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
+# Ideally controller itself should track the cluster memember information, rather than depend on metadata as the format will be CSP dependant.
 import requests
 url = "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
 headers = {"Metadata": "true"}
@@ -98,3 +99,20 @@ if response.status_code == 200:
     logging.info("Node public IP: %s", node_public_ip)
 else:
     logging.error("Failed to retrieve instance metadata. Status code:", response.status_code)
+
+
+# Read nodes_info.json to get other cluster members' information
+import json
+
+try:
+    # Read the JSON file
+    with open('/etc/bootstrap/nodes_info.json', 'r') as file:
+        json_data = json.load(file)
+
+    # Get the list of node names
+    node_names = list(json_data.keys())
+
+    # Print the list of node names
+    logging.info("List of nodes in cluster: %s", node_names)
+except Exception as e:
+    logging.error("Failed to read nodes_info.json. Error: %s", str(e))
