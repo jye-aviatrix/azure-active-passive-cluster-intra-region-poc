@@ -10,7 +10,8 @@ resource "azurerm_storage_account" "this" {
   account_replication_type = "LRS"
 }
 
-# resource "azurerm_storage_queue" "this" {
-#   name                 = "lb-alert-queue"
-#   storage_account_name = azurerm_storage_account.this.name
-# }
+resource "azurerm_storage_container" "bootstrap" {
+  name                  = "bootstrap"
+  storage_account_name  = azurerm_storage_account.this.name
+  container_access_type = "private"
+}
