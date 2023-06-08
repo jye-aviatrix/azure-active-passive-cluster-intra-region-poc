@@ -141,22 +141,22 @@ majority_nodes = (total_nodes + 1) // 2
 logging.info("Require minimum %s majority nodes to vote who's the active node", majority_nodes)
 
 
-reachable_nodes=[]
+reachable_nodes_public_ips=[]
 for remote_node_name, remote_node_data in nodes_info_json_data.items():
     remote_public_ip = remote_node_data.get('public_ip')
     if remote_public_ip == node_public_ip:
         logging.info("Node Name: %s with public IP: %s is local, skip", remote_node_name,remote_public_ip)
 
-        reachable_nodes.append(remote_public_ip)
+        reachable_nodes_public_ips.append(remote_public_ip)
     else:
         logging.info("Node Name: %s with public IP: %s is remote, perform connectivity test", remote_node_name,remote_public_ip)
         if check_http(remote_public_ip):            
 
-            reachable_nodes.append(remote_public_ip)
+            reachable_nodes_public_ips.append(remote_public_ip)
 
-logging.info("All reachable nodes (including local node): %s", reachable_nodes)
+logging.info("All reachable nodes (including local node): %s", reachable_nodes_public_ips)
 
-if len(reachable_nodes) >= majority_nodes:
-    logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes),majority_nodes)
+if len(reachable_nodes_public_ips) >= majority_nodes:
+    logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes)
 else:
-    logging.info("Total reachable nodes %s is less than majority nodes %s", len(reachable_nodes),majority_nodes)
+    logging.info("Total reachable nodes %s is less than majority nodes %s", len(reachable_nodes_public_ips),majority_nodes)
