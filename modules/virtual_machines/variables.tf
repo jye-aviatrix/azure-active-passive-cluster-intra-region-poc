@@ -44,13 +44,28 @@ variable "bootstrap_url" {
 locals {
     custom_data = <<EOF
 #!/bin/bash
+
+# Install apache and create a default page
 sudo apt update -y
 sudo apt install apache2 -y
 echo "<h1>${var.vm_name}</h1>" | sudo tee /var/www/html/index.html
+
+# Copy over files
 mkdir /etc/bootstrap/
 mkdir /var/log/bootstrap/
 wget -O /etc/bootstrap/nodes_info.json ${var.bootstrap_url}nodes_info.json
+wget -O /etc/bootstrap/active.php ${var.bootstrap_url}active.php
+wget -O /etc/bootstrap/passive.php ${var.bootstrap_url}passive.php
 wget -O /etc/bootstrap/loader.py ${var.bootstrap_url}loader.py
+
+# Schedule loader to run every one minute
 (crontab -l ; echo "* * * * * python3 /etc/bootstrap/loader.py >> /var/log/bootstrap/logfile.log")| crontab -
+
+# Add Ondrej sury PPA repository To run PHP 8.1 on Ubuntu 22.04
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt install php8.1 -y
+
+# Final update
+sudo apt update && apt upgrade -y
 EOF
 }

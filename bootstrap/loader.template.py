@@ -162,5 +162,16 @@ logging.info("All reachable nodes (including local node): %s", reachable_nodes_p
 
 if len(reachable_nodes_public_ips) >= majority_nodes:
     logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes)
+    filtered_ordered_nodes = [(node_name, node_info) for node_name, node_info in ordered_nodes_info if node_info['public_ip'] in reachable_nodes_public_ips]
+
+    logging.info("Filtered rechable ordered nodes %s", filtered_ordered_nodes)
+    # TODO
+    # Meet the quorum of having more than reachable node than majority nodes
+    # If local node is top of the filtered ordered nodes, then node is active
+    # else local node is passive
 else:
     logging.info("Total reachable nodes %s is less than majority nodes %s", len(reachable_nodes_public_ips),majority_nodes)
+    # TODO
+    # Not able to meet quorum of at least majority nodes, node is passive
+
+
