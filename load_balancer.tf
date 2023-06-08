@@ -38,7 +38,7 @@ resource "azurerm_lb_probe" "this" {
   name            = "http-status-200-probe"
   protocol = "Http"
   port            = 80
-  request_path = "/probe.php"
+  request_path = "/probe.html"
 }
 
 resource "azurerm_lb_rule" "this" {

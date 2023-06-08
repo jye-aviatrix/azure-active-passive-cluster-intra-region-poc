@@ -20,25 +20,16 @@ resource "azurerm_storage_blob" "loader" {
 }
 
 
-resource "azurerm_storage_blob" "active" {
-  name                   = "bootstrap/active.php"
+resource "azurerm_storage_blob" "probe" {
+  name                   = "bootstrap/probe.html"
   storage_account_name   = azurerm_storage_account.this.name
   storage_container_name = "$web"
   type                   = "Block"
   content_type           = "application/octet-stream"
-  source                 = "./bootstrap/active.php"
-  content_md5            = filemd5("./bootstrap/active.php") # This is important to make sure file change gets updated
+  source                 = "./bootstrap/probe.html"
+  content_md5            = filemd5("./bootstrap/probe.html") # This is important to make sure file change gets updated
 }
 
-resource "azurerm_storage_blob" "passive" {
-  name                   = "bootstrap/passive.php"
-  storage_account_name   = azurerm_storage_account.this.name
-  storage_container_name = "$web"
-  type                   = "Block"
-  content_type           = "application/octet-stream"
-  source                 = "./bootstrap/passive.php"
-  content_md5            = filemd5("./bootstrap/passive.php") # This is important to make sure file change gets updated
-}
 
 
 resource "azurerm_storage_blob" "bootup" {

@@ -10,8 +10,7 @@ module "nodes" {
   identity_id = azurerm_user_assigned_identity.this.id
   bootstrap_url = "${azurerm_storage_account.this.primary_web_endpoint}bootstrap/"
   depends_on = [ 
-    azurerm_storage_blob.active,
-    azurerm_storage_blob.passive,
+    azurerm_storage_blob.probe,
     azurerm_storage_blob.bootup,
     azurerm_storage_blob.bootup_service,
     azurerm_storage_blob.loader,

@@ -175,6 +175,8 @@ for remote_node_name, remote_node_info in ordered_nodes_info:
 
 logging.info("All reachable nodes (including local node): %s", reachable_nodes_public_ips)
 
+import os
+
 if len(reachable_nodes_public_ips) >= majority_nodes_count:
     logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes_count)
     filtered_ordered_nodes = [(n_name, n_info) for n_name, n_info in ordered_nodes_info if n_info['public_ip'] in reachable_nodes_public_ips]
@@ -185,14 +187,22 @@ if len(reachable_nodes_public_ips) >= majority_nodes_count:
     # else local node is passive
     if filtered_ordered_nodes[0][1]['public_ip'] == local_node_public_ip:
         logging.info("Node %s reachbility reach quorum and is preferred, set as active", local_node_name)
-        shutil.copy2("/etc/bootstrap/active.php", "/var/www/html/probe.php")
+        shutil.copy2("/etc/bootstrap/probe.html", "/var/www/html/probe.html")
     else:
         logging.info("Node %s reachbility reach quorum but not preferred, set as passive", local_node_name)
-        shutil.copy2("/etc/bootstrap/passive.php", "/var/www/html/probe.php")
+        if os.path.exists("/var/www/html/probe.html"):
+            os.remove("/var/www/html/probe.html")
+            logging.info("probe.html deleted")
+        else:
+            logging.info("probe.html already does not exist")
 
 else:
     logging.info("Node %s reachbility didn't meet quorum, total reachable nodes %s is less than majority nodes %s, set to passive", local_node_name, len(reachable_nodes_public_ips),majority_nodes_count)
     # Not able to meet quorum of at least majority nodes, node is passive
-    shutil.copy2("/etc/bootstrap/passive.php", "/var/www/html/probe.php")
+    if os.path.exists("/var/www/html/probe.html"):
+            os.remove("/var/www/html/probe.html")
+            logging.info("probe.html deleted")
+    else:
+        logging.info("probe.html already does not exist")
 
 

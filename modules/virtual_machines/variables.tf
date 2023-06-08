@@ -46,7 +46,7 @@ locals {
 #!/bin/bash
 
 # Install apache and create a default page
-sudo apt update && apt upgrade -y
+sudo apt update 
 sudo apt install apache2 -y
 echo "<h1>${var.vm_name}</h1>" | sudo tee /var/www/html/index.html
 
@@ -54,20 +54,15 @@ echo "<h1>${var.vm_name}</h1>" | sudo tee /var/www/html/index.html
 mkdir /etc/bootstrap/
 mkdir /var/log/bootstrap/
 wget -O /etc/bootstrap/nodes_info.json ${var.bootstrap_url}nodes_info.json
-wget -O /etc/bootstrap/active.php ${var.bootstrap_url}active.php
-wget -O /etc/bootstrap/passive.php ${var.bootstrap_url}passive.php
+wget -O /etc/bootstrap/probe.html ${var.bootstrap_url}probe.html
 wget -O /etc/bootstrap/loader.py ${var.bootstrap_url}loader.py
 wget -O /usr/local/bin/bootup.sh ${var.bootstrap_url}bootup.sh
 wget -O /etc/systemd/system/bootup.service ${var.bootstrap_url}bootup.service
 
-# Add Ondrej sury PPA repository To run PHP 8.1 on Ubuntu 22.04
-sudo add-apt-repository ppa:ondrej/php -y
-sudo apt install php8.1 -y
+# Make sure node bootstrap as passive by remove probe.html, this file would only be created by loader.py after evaulate connectivity with other nodes
+rm /var/www/html/probe.html
 
-# Make sure node bootstrap as passive by remove probe.php, this file would only be created by loader.py after evaulate connectivity with other nodes
-rm /var/www/html/probe.php
-
-# Make sure node start up as passive during each reboot, bootup.sh will delete probe.php, leaving loader.py to determine if the node need to be passive
+# Make sure node start up as passive during each reboot, bootup.sh will delete probe.html, leaving loader.py to determine if the node need to be passive
 chmod +x /usr/local/bin/bootup.sh
 sudo systemctl daemon-reload
 sudo systemctl enable bootup.service
