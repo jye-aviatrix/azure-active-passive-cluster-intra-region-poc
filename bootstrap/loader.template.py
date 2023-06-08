@@ -93,13 +93,28 @@ if response.status_code == 200:
     metadata = response.json()
     local_node_name = metadata['compute']['name']
     local_node_private_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['privateIpAddress']
-    local_node_public_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['publicIpAddress']
+    # Metadata service can only read VM publicIP with with basic publicIP sku: https://stackoverflow.com/questions/62719494/azure-vm-metadata-missing-emtpy-publicipaddress
+    # Move this function over to Metadata service for load balancer 
+    # local_node_public_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['publicIpAddress']
     logging.info("Local node name: %s", local_node_name)
     logging.info("Local node private IP: %s", local_node_private_ip)
-    logging.info("Local node public IP: %s", local_node_public_ip)
 else:
     logging.error("Failed to retrieve instance metadata. Status code:", response.status_code)
 
+
+url = "http://169.254.169.254/metadata/loadbalancer?api-version=2021-02-01"
+headers = {"Metadata": "true"}
+try: 
+    logging.info("Reading load balancer metadata service")
+    lb_response = requests.get(url, headers=headers)
+except Exception as e:
+    logging.error("Failed to read load balancer metadata service. Error: %s", str(e))
+if lb_response.status_code == 200:
+    lb_metadata = lb_response.json()
+    local_node_public_ip = lb_metadata['loadbalancer']['publicIpAddresses'][0]['frontendIpAddress']
+    logging.info("Local node public IP: %s", local_node_public_ip)
+else:
+    logging.error("Failed to retrieve load balancer metadata. Status code:", lb_response.status_code)
 
 # Read nodes_info.json to get other cluster members' information
 import json

@@ -8,6 +8,7 @@ resource "azurerm_public_ip" "this" {
   resource_group_name = var.resource_group_name
   location            = var.region
   allocation_method   = "Static"
+  sku = "Standard"
 }
 
 resource "azurerm_network_interface" "this" {

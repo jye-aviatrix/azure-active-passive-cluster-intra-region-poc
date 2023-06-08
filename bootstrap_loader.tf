@@ -16,7 +16,7 @@ resource "azurerm_storage_blob" "loader" {
   type                   = "Block"
   content_type           = "text/x-python"
   source                 = local_file.loader.filename
-  content_md5            = local_file.loader.content_md5
+  content_md5            = local_file.loader.content_md5 # This is important to make sure file change gets updated
 }
 
 
@@ -27,7 +27,7 @@ resource "azurerm_storage_blob" "active" {
   type                   = "Block"
   content_type           = "application/octet-stream"
   source                 = "./bootstrap/active.php"
-  content_md5            = filemd5("./bootstrap/active.php")
+  content_md5            = filemd5("./bootstrap/active.php") # This is important to make sure file change gets updated
 }
 
 resource "azurerm_storage_blob" "passive" {
@@ -37,7 +37,7 @@ resource "azurerm_storage_blob" "passive" {
   type                   = "Block"
   content_type           = "application/octet-stream"
   source                 = "./bootstrap/passive.php"
-  content_md5            = filemd5("./bootstrap/passive.php")
+  content_md5            = filemd5("./bootstrap/passive.php") # This is important to make sure file change gets updated
 }
 
 
@@ -48,7 +48,7 @@ resource "azurerm_storage_blob" "bootup" {
   type                   = "Block"
   content_type           = "text/x-sh"
   source                 = "./bootstrap/bootup.sh"
-  content_md5            = filemd5("./bootstrap/bootup.sh")
+  content_md5            = filemd5("./bootstrap/bootup.sh") # This is important to make sure file change gets updated
 }
 
 resource "azurerm_storage_blob" "bootup_service" {
@@ -58,5 +58,5 @@ resource "azurerm_storage_blob" "bootup_service" {
   type                   = "Block"
   content_type           = "application/octet-stream"
   source                 = "./bootstrap/bootup.service"
-  content_md5            = filemd5("./bootstrap/bootup.service")
+  content_md5            = filemd5("./bootstrap/bootup.service") # This is important to make sure file change gets updated
 }
