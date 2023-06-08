@@ -103,14 +103,18 @@ else:
 
 # Read nodes_info.json to get other cluster members' information
 import json
+from collections import OrderedDict
 
 try:
     # Read the JSON file
     with open('/etc/bootstrap/nodes_info.json', 'r') as file:
         nodes_info_json_data = json.load(file)
+    
+    # Convert to ordered list
+    ordered_nodes_info = list(OrderedDict(nodes_info_json_data).items())
 
     # Get the list of node names
-    node_names = list(nodes_info_json_data.keys())
+    node_names = [node[0] for node in ordered_nodes_info]
 
     # Print the list of node names
     logging.info("List of nodes in cluster: %s", node_names)
@@ -142,8 +146,8 @@ logging.info("Require minimum %s majority nodes to vote who's the active node", 
 
 
 reachable_nodes_public_ips=[]
-for remote_node_name, remote_node_data in nodes_info_json_data.items():
-    remote_public_ip = remote_node_data.get('public_ip')
+for remote_node_name, remote_node_info in ordered_nodes_info:
+    remote_public_ip = remote_node_info['public_ip']
     if remote_public_ip == node_public_ip:
         logging.info("Node Name: %s with public IP: %s is local, skip", remote_node_name,remote_public_ip)
 
