@@ -91,12 +91,12 @@ except Exception as e:
     logging.error("Failed to read instance metadata service. Error: %s", str(e))
 if response.status_code == 200:
     metadata = response.json()
-    node_name = metadata['compute']['name']
-    node_private_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['privateIpAddress']
-    node_public_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['publicIpAddress']
-    logging.info("Node name: %s", node_name)
-    logging.info("Node private IP: %s", node_private_ip)
-    logging.info("Node public IP: %s", node_public_ip)
+    local_node_name = metadata['compute']['name']
+    local_node_private_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['privateIpAddress']
+    local_node_public_ip = metadata['network']['interface'][0]['ipv4']['ipAddress'][0]['publicIpAddress']
+    logging.info("Local node name: %s", local_node_name)
+    logging.info("Local node private IP: %s", local_node_private_ip)
+    logging.info("Local node public IP: %s", local_node_public_ip)
 else:
     logging.error("Failed to retrieve instance metadata. Status code:", response.status_code)
 
@@ -138,17 +138,17 @@ def check_http(public_ip):
         logging.error("An error occurred while connecting to %s, error: %s", public_ip, str(e))
         return False
 
-total_nodes = len(node_names)
-logging.info("There are total: %s nodes in the cluster", total_nodes)
+total_nodes_count = len(node_names)
+logging.info("There are total: %s nodes in the cluster", total_nodes_count)
 
-majority_nodes = (total_nodes + 1) // 2
-logging.info("Require minimum %s majority nodes to vote who's the active node", majority_nodes)
+majority_nodes_count = (total_nodes_count + 1) // 2
+logging.info("Require minimum %s majority nodes to vote who's the active node", majority_nodes_count)
 
 
 reachable_nodes_public_ips=[]
 for remote_node_name, remote_node_info in ordered_nodes_info:
     remote_public_ip = remote_node_info['public_ip']
-    if remote_public_ip == node_public_ip:
+    if remote_public_ip == local_node_public_ip:
         logging.info("Node Name: %s with public IP: %s is local, skip", remote_node_name,remote_public_ip)
 
         reachable_nodes_public_ips.append(remote_public_ip)
@@ -160,22 +160,23 @@ for remote_node_name, remote_node_info in ordered_nodes_info:
 
 logging.info("All reachable nodes (including local node): %s", reachable_nodes_public_ips)
 
-if len(reachable_nodes_public_ips) >= majority_nodes:
-    logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes)
-    filtered_ordered_nodes = [(node_name, node_info) for node_name, node_info in ordered_nodes_info if node_info['public_ip'] in reachable_nodes_public_ips]
+if len(reachable_nodes_public_ips) >= majority_nodes_count:
+    logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes_count)
+    filtered_ordered_nodes = [(n_name, n_info) for n_name, n_info in ordered_nodes_info if n_info['public_ip'] in reachable_nodes_public_ips]
 
     logging.info("Filtered rechable ordered nodes %s", filtered_ordered_nodes)
     # Meet the quorum of having more than reachable node than majority nodes
     # If local node is top of the filtered ordered nodes, then node is active
     # else local node is passive
-    if filtered_ordered_nodes[0][1]['public_ip'] == node_public_ip:
+    if filtered_ordered_nodes[0][1]['public_ip'] == local_node_public_ip:
+        logging.info("Node %s reachbility reach quorum and is preferred, set as active", local_node_name)
         shutil.copy2("/etc/bootstrap/active.php", "/var/www/html/probe.php")
     else:
+        logging.info("Node %s reachbility reach quorum but not preferred, set as passive", local_node_name)
         shutil.copy2("/etc/bootstrap/passive.php", "/var/www/html/probe.php")
 
 else:
-    logging.info("Total reachable nodes %s is less than majority nodes %s", len(reachable_nodes_public_ips),majority_nodes)
-    # TODO
+    logging.info("Node %s reachbility didn't meet quorum, total reachable nodes %s is less than majority nodes %s, set to passive", local_node_name, len(reachable_nodes_public_ips),majority_nodes_count)
     # Not able to meet quorum of at least majority nodes, node is passive
     shutil.copy2("/etc/bootstrap/passive.php", "/var/www/html/probe.php")
 
