@@ -116,3 +116,47 @@ try:
     logging.info("List of nodes in cluster: %s", node_names)
 except Exception as e:
     logging.error("Failed to read nodes_info.json. Error: %s", str(e))
+
+
+# Connectivity test
+def check_http(public_ip):
+    url = f"http://{public_ip}"
+
+    try:
+        response = requests.get(url,timeout=10)
+        if response.status_code == 200:
+            logging.info("HTTP Connectivity is successful to %s", public_ip)
+            return True
+        else:
+            logging.error("HTTP Connectivity to %s failed with status code: %s", public_ip, response.status_code)
+            return False
+    except requests.exceptions.RequestException as e:
+        logging.error("An error occurred while connecting to %s, error: %s", public_ip, str(e))
+        return False
+
+total_nodes = len(node_names)
+logging.info("There are total: %s nodes in the cluster", total_nodes)
+
+majority_nodes = (total_nodes + 1) // 2
+logging.info("Require minimum %s majority nodes to vote who's the active node", majority_nodes)
+
+
+reachable_nodes=[]
+for remote_node_name, remote_node_data in nodes_info_json_data.items():
+    remote_public_ip = remote_node_data.get('public_ip')
+    if remote_public_ip == node_public_ip:
+        logging.info("Node Name: %s with public IP: %s is local, skip", remote_node_name,remote_public_ip)
+
+        reachable_nodes.append(remote_public_ip)
+    else:
+        logging.info("Node Name: %s with public IP: %s is remote, perform connectivity test", remote_node_name,remote_public_ip)
+        if check_http(remote_public_ip):            
+
+            reachable_nodes.append(remote_public_ip)
+
+logging.info("All reachable nodes (including local node): %s", reachable_nodes)
+
+if len(reachable_nodes) >= majority_nodes:
+    logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes),majority_nodes)
+else:
+    logging.info("Total reachable nodes %s is less than majority nodes %s", len(reachable_nodes),majority_nodes)
