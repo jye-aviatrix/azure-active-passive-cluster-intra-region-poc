@@ -39,3 +39,24 @@ resource "azurerm_storage_blob" "passive" {
   source                 = "./bootstrap/passive.php"
   content_md5            = filemd5("./bootstrap/passive.php")
 }
+
+
+resource "azurerm_storage_blob" "bootup" {
+  name                   = "bootstrap/bootup.sh"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = "$web"
+  type                   = "Block"
+  content_type           = "text/x-sh"
+  source                 = "./bootstrap/bootup.sh"
+  content_md5            = filemd5("./bootstrap/bootup.sh")
+}
+
+resource "azurerm_storage_blob" "bootup_service" {
+  name                   = "bootstrap/bootup.service"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = "$web"
+  type                   = "Block"
+  content_type           = "application/octet-stream"
+  source                 = "./bootstrap/bootup.service"
+  content_md5            = filemd5("./bootstrap/bootup.service")
+}

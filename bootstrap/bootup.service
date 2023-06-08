@@ -1,0 +1,8 @@
+[Unit]
+Description=Bootup Script
+
+[Service]
+ExecStart=/usr/local/bin/bootup.sh
+
+[Install]
+WantedBy=default.target
