@@ -2,6 +2,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   name                = var.vm_name
   resource_group_name = var.resource_group_name
   location            = var.region
+  zone                = var.zone
   size                = "Standard_B1s"
   admin_username      = var.admin_username
   network_interface_ids = [
@@ -10,7 +11,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file(var.public_key_file)  
+    public_key = file(var.public_key_file)
   }
 
   os_disk {
@@ -29,7 +30,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   identity {
     type = "UserAssigned"
     identity_ids = [
-        var.identity_id
+      var.identity_id
     ]
   }
 }

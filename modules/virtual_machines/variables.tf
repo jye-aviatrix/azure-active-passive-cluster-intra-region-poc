@@ -41,6 +41,11 @@ variable "bootstrap_url" {
   description = "Provide uri where bootstrap files are stored, example: https://apc7e317c4fbd9749f7.z13.web.core.windows.net/bootstrap/"
 }
 
+variable "zone" {
+  type = string
+  description = "provide availability zone for the VM to be deployed"
+}
+
 locals {
     custom_data = <<EOF
 #!/bin/bash
