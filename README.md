@@ -116,3 +116,4 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
 - We are only checking connectivity every one minutes using cron jobs, which is the shortest time frame cron can support
     - To have faster detection, a continues running services is necessary to have shorter detection interval
 - We are using a static ordered list where it always goes ['node1','node2','node3'], node3 is always at the bottom of the list so even when reaches quorum, it will never become active. If a new ordered list, such as ['node3','node1','node2'] is required, an mechanism of updating the list order on the active node, make sure it gets properly synced to the remaining nodes, before the new order take effect will be necessary.
+- On the flip side, since the last node in the ordered list will never become active, we can use a very small instance size for the last node, and doesn't need to run any services.
