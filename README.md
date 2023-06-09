@@ -32,14 +32,29 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
 ## Testing
 - All three nodes are up and reachable to each other
     - Node1 will become active, and rest two will become passive
+    ![All three nodes are up](images/Active%20Passive%20Cluster%20-%20All%20three%20nodes%20reachable.png)
+
 - Turn off node1, and leaving node2, and node 3
     - Node2 will become active and node3 stays as passive
+    ![Node1 down](images/Active%20Passive%20Cluster%20-%20Node1%20down.png)
+
 - Turn on node1, node2 and node3 continue running
-    - Node1 will become active, and rest two will become passive
-- Turn off node3, leave node1 and node2 running
-    - Node1 still remain active, and node2 will remain passive
-- Turn off node 2, only node1 is running
+    - Node1 will become active again, and rest two will become passive
+    ![All three nodes are up](images/Active%20Passive%20Cluster%20-%20All%20three%20nodes%20reachable.png)
+
+- Turn off node2, leave node1 and node3 running
+    - Node1 still remain active, and node3 will remain passive
+    ![Node2 down](images/Active%20Passive%20Cluster%20-%20Node2%20down.png)
+
+- Turn off node 2 and node3, only node1 is running
     - Node1 loses quorum and will become passive
+    ![Both Node2 and Node3 down](images/Active%20Passive%20Cluster%20-%20Both%20Node2%20and%20Node3%20down.png)
+
+- Turn on node2, leave node3 down and node1 running
+    - Node1 become active, and node2 will become passive
+    ![Node3 down](images/Active%20Passive%20Cluster%20-%20Node3%20down.png)
+
+
 
 
 ## Room for improvement
