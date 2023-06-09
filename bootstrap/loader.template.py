@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 
 
-# Get lastest version of the loader
+# Get latest version of the loader
 import urllib.request
 url = "${bootstrap_url}loader.py"
 destination = "/etc/bootstrap/loader.tmp.py"
@@ -62,25 +62,25 @@ try:
         hash_compare_success = True
         hash_is_different = True        
 except Exception as e:
-    logging.error("Failed to compare hasing of loader.py and loader.temp.py file. Error: %s", str(e))
+    logging.error("Failed to compare hashing of loader.py and loader.temp.py file. Error: %s", str(e))
 
 
-# Overwite loader.py with loader.tmp.py
+# Overwrite loader.py with loader.tmp.py
 import shutil
 
 if download_success and hash_compare_success and hash_is_different:
     try:
-        logging.info("Try to overwite loader.py with loader.tmp.py")
+        logging.info("Try to overwrite loader.py with loader.tmp.py")
         shutil.copy2("/etc/bootstrap/loader.tmp.py", "/etc/bootstrap/loader.py")
-        logging.info("loader.py successfully overwriten with loader.tmp.py")
+        logging.info("loader.py successfully overwrote with loader.tmp.py")
     except Exception as e:
-        logging.error("Failed to overwite loader.py with loader.tmp.py. Error: %s", str(e))
+        logging.error("Failed to overwrite loader.py with loader.tmp.py. Error: %s", str(e))
 
 
 
 # Read Azure Instance Metadata Service for node information
 # https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
-# Ideally controller itself should track the cluster memember information, rather than depend on metadata as the format will be CSP dependant.
+# Ideally controller itself should track the cluster member information, rather than depend on metadata as the format will be CSP dependant.
 import requests
 url = "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
 headers = {"Metadata": "true"}
@@ -181,15 +181,15 @@ if len(reachable_nodes_public_ips) >= majority_nodes_count:
     logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes_count)
     filtered_ordered_nodes = [(n_name, n_info) for n_name, n_info in ordered_nodes_info if n_info['public_ip'] in reachable_nodes_public_ips]
 
-    logging.info("Filtered rechable ordered nodes %s", filtered_ordered_nodes)
+    logging.info("Filtered reachable ordered nodes %s", filtered_ordered_nodes)
     # Meet the quorum of having more than reachable node than majority nodes
     # If local node is top of the filtered ordered nodes, then node is active
     # else local node is passive
     if filtered_ordered_nodes[0][1]['public_ip'] == local_node_public_ip:
-        logging.info("Node %s reachbility reach quorum and is preferred, set as active", local_node_name)
+        logging.info("Node %s reachability reach quorum and is preferred, set as active", local_node_name)
         shutil.copy2("/etc/bootstrap/probe.html", "/var/www/html/probe.html")
     else:
-        logging.info("Node %s reachbility reach quorum but not preferred, set as passive", local_node_name)
+        logging.info("Node %s reachability reach quorum but not preferred, set as passive", local_node_name)
         if os.path.exists("/var/www/html/probe.html"):
             os.remove("/var/www/html/probe.html")
             logging.info("probe.html deleted")
@@ -197,7 +197,7 @@ if len(reachable_nodes_public_ips) >= majority_nodes_count:
             logging.info("probe.html already does not exist")
 
 else:
-    logging.info("Node %s reachbility didn't meet quorum, total reachable nodes %s is less than majority nodes %s, set to passive", local_node_name, len(reachable_nodes_public_ips),majority_nodes_count)
+    logging.info("Node %s reachability didn't meet quorum, total reachable nodes %s is less than majority nodes %s, set to passive", local_node_name, len(reachable_nodes_public_ips),majority_nodes_count)
     # Not able to meet quorum of at least majority nodes, node is passive
     if os.path.exists("/var/www/html/probe.html"):
             os.remove("/var/www/html/probe.html")

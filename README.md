@@ -1,8 +1,8 @@
 # azure-active-passive-cluster-intra-region-poc
 
-Content of this repo shows proof of concept of three VM active/passive/passive cluster in three availabilty zone in a single region. Odd number of VM is required to be able to get majority quorum. This means out of three nodes, you need two health nodes to have one active node. If two nodes become unhealthy, the remaining node won't become active and will remain passive.
+Content of this repo shows proof of concept of three VM active/passive/passive cluster in three availability zone in a single region. Odd number of VM is required to be able to get majority quorum. This means out of three nodes, you need two health nodes to have one active node. If two nodes become unhealthy, the remaining node won't become active and will remain passive.
 
-Each VM/node is bootstraped to install apache and have a default /index.html page. Network security group of each node opens incoming HTTP to internet. Each node has been assigned public IP.
+Each VM/node is bootstrapped to install Apache and have a default /index.html page. Network security group of each node opens incoming HTTP to internet. Each node has been assigned public IP.
 
 A public load balancer is created, using these three nodes as backend, a HTTP probe has been created to check each node's /probe.html.
 
@@ -15,8 +15,8 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
 - Read Azure Instance Metadata service for node name and private IP
 - Read Azure Load Balancer Metadata service for public IP assigned to each node
 - Read nodes_info.json for each nodes information
-    - Caculate total number of nodes
-    - Caculate what number is required to get majority quorum 
+    - Calculate total number of nodes
+    - Calculate what number is required to get majority quorum 
     - From each node, perform connectivity test against rest of the nodes
         - The test is done using public IP, but very easy to change to use private IP
         - Public IP would be helpful for cross region or even cross CSP        
@@ -77,8 +77,8 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
     2023-06-09 15:55:02,126 - INFO - HTTP Connectivity is successful to 74.235.47.131
     2023-06-09 15:55:02,126 - INFO - All reachable nodes (including local node): ['74.235.46.212', '74.235.47.70', '74.235.47.131']
     2023-06-09 15:55:02,126 - INFO - Total reachable nodes 3 is more than or equal to majority nodes 2
-    2023-06-09 15:55:02,126 - INFO - Filtered rechable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.6', 'public_ip': '74.235.46.212'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.4', 'public_ip': '74.235.47.70'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.5', 'public_ip': '74.235.47.131'})]
-    2023-06-09 15:55:02,126 - INFO - Node node1 reachbility reach quorum and is preferred, set as active
+    2023-06-09 15:55:02,126 - INFO - Filtered reachable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.6', 'public_ip': '74.235.46.212'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.4', 'public_ip': '74.235.47.70'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.5', 'public_ip': '74.235.47.131'})]
+    2023-06-09 15:55:02,126 - INFO - Node node1 reachability reach quorum and is preferred, set as active
     ```
 
     Example of passive node
@@ -92,8 +92,8 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
     2023-06-09 15:57:02,150 - INFO - HTTP Connectivity is successful to 74.235.47.131
     2023-06-09 15:57:02,150 - INFO - All reachable nodes (including local node): ['74.235.46.212', '74.235.47.70', '74.235.47.131']
     2023-06-09 15:57:02,150 - INFO - Total reachable nodes 3 is more than or equal to majority nodes 2
-    2023-06-09 15:57:02,150 - INFO - Filtered rechable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.6', 'public_ip': '74.235.46.212'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.4', 'public_ip': '74.235.47.70'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.5', 'public_ip': '74.235.47.131'})]
-    2023-06-09 15:57:02,150 - INFO - Node node2 reachbility reach quorum but not preferred, set as passive
+    2023-06-09 15:57:02,150 - INFO - Filtered reachable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.6', 'public_ip': '74.235.46.212'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.4', 'public_ip': '74.235.47.70'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.5', 'public_ip': '74.235.47.131'})]
+    2023-06-09 15:57:02,150 - INFO - Node node2 reachability reach quorum but not preferred, set as passive
     2023-06-09 15:57:02,150 - INFO - probe.html already does not exist
     ```
 
@@ -105,14 +105,14 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
     ```
 ## Room for improvement
 - Currently the connectivity test is only outbound from local node to other two nodes
-- A potential sitaution would be:
+- A potential situation would be:
     - Node1 have a network security group block incoming connection from node2
     - Node1 still can reach both other two nodes, since it's in the top of reachable ordered list (include itself), it will decide itself as active
-    - Node2 cannot reach node1, but can still reach node3, so the total count of reacahble ordered list (include itself) is 2 and equal to required majority quorum, so node2 will decide it's also active
+    - Node2 cannot reach node1, but can still reach node3, so the total count of reachable ordered list (include itself) is 2 and equal to required majority quorum, so node2 will decide it's also active
     - To solve this problem, we need proper communication between each nodes
         - Node1 will check if it can reach node2, and send this information to node2
         - Node2 will check if it can reach node1, and also send this information to node1
-        - Both side will only consider bi-directional connectivity is working, if it has confirmed both outbound and inbound (from it's neighbour)'s connectivty
+        - Both side will only consider bi-directional connectivity is working, if it has confirmed both outbound and inbound (from it's neighbors)'s connectivity
 - We are only checking connectivity every one minutes using cron jobs, which is the shortest time frame cron can support
-    - To have faster detection, a continues running services is necessory to have shorter detection interval
-- We are using a static ordered list where it always goes ['node1','node2','node3'], node3 is always at the bottom of the list so even when reaches quorum, it will never become active. If a new ordered list, such as ['node3','node1','node2'] is required, an mechanism of updating the list order on the active node, make sure it gets properly synced to the remaining nodes, before the new order take effect will be necessory.
+    - To have faster detection, a continues running services is necessary to have shorter detection interval
+- We are using a static ordered list where it always goes ['node1','node2','node3'], node3 is always at the bottom of the list so even when reaches quorum, it will never become active. If a new ordered list, such as ['node3','node1','node2'] is required, an mechanism of updating the list order on the active node, make sure it gets properly synced to the remaining nodes, before the new order take effect will be necessary.
