@@ -9,7 +9,7 @@ module "nodes" {
   network_interface_id = module.network_interfaces[each.value].network_interface_id
   identity_id          = azurerm_user_assigned_identity.this.id
   bootstrap_url        = "${azurerm_storage_account.this.primary_web_endpoint}bootstrap/"
-  zone                   = index(local.node_list,each.value)+1
+  zone                   = (index(local.node_list,each.value) % 3 ) + 1  # Use % 3 to make sure if node is more than 3, it will cycle through az1, az2, az3
   depends_on = [
     azurerm_storage_blob.probe,
     azurerm_storage_blob.bootup,
