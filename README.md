@@ -59,7 +59,7 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
 - From a test machine, you may use a loop to curl probe.html of each nodes to get http status
     ```
     while true; do
-        curl -i http://<node_public_ip>/probe.php | grep HTTP/1.1
+        curl -i http://<node_public_ip>/probe.html | grep HTTP/1.1
         sleep 5
     done
     ```
