@@ -142,7 +142,7 @@ def check_http(public_ip):
     url = f"http://{public_ip}"
 
     try:
-        response = requests.get(url,timeout=10)
+        response = requests.get(url,timeout=5)
         if response.status_code == 200:
             logging.info("HTTP Connectivity is successful to %s", public_ip)
             return True
