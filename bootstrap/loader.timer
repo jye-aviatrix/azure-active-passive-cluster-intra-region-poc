@@ -1,0 +1,10 @@
+[Unit]
+Description=For Aviatrix Controller Active/Passive cluster. This timer runs loader.service every 20 seconds
+
+[Timer]
+AccuracySec=1s
+OnCalendar=*-*-* *:*:00,20,40
+Unit=loader.service
+
+[Install]
+WantedBy=timers.target

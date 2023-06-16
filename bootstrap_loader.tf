@@ -51,3 +51,24 @@ resource "azurerm_storage_blob" "bootup_service" {
   source                 = "./bootstrap/bootup.service"
   content_md5            = filemd5("./bootstrap/bootup.service") # This is important to make sure file change gets updated
 }
+
+
+resource "azurerm_storage_blob" "loader_service" {
+  name                   = "bootstrap/loader.service"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = "$web"
+  type                   = "Block"
+  content_type           = "application/octet-stream"
+  source                 = "./bootstrap/loader.service"
+  content_md5            = filemd5("./bootstrap/loader.service") # This is important to make sure file change gets updated
+}
+
+resource "azurerm_storage_blob" "loader_timer" {
+  name                   = "bootstrap/loader.timer"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = "$web"
+  type                   = "Block"
+  content_type           = "application/octet-stream"
+  source                 = "./bootstrap/loader.timer"
+  content_md5            = filemd5("./bootstrap/loader.timer") # This is important to make sure file change gets updated
+}

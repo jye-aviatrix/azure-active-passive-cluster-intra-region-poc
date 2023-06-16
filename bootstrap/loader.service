@@ -1,0 +1,8 @@
+[Unit]
+Description=For Aviatrix Controller Active/Passive cluster. This service cross check other nodes and determine if itself should be active. It also perform update of loader.py.
+
+[Service]
+ExecStart=/usr/bin/python3 /etc/bootstrap/loader.py
+
+[Install]
+WantedBy=default.target

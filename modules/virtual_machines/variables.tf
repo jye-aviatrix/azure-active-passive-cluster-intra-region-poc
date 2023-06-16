@@ -63,6 +63,9 @@ wget -O /etc/bootstrap/probe.html ${var.bootstrap_url}probe.html
 wget -O /etc/bootstrap/loader.py ${var.bootstrap_url}loader.py
 wget -O /usr/local/bin/bootup.sh ${var.bootstrap_url}bootup.sh
 wget -O /etc/systemd/system/bootup.service ${var.bootstrap_url}bootup.service
+wget -O /etc/systemd/system/loader.service ${var.bootstrap_url}loader.service
+wget -O /etc/systemd/system/loader.timer ${var.bootstrap_url}loader.timer
+
 
 # Make sure node bootstrap as passive by remove probe.html, this file would only be created by loader.py after evaulate connectivity with other nodes
 rm /var/www/html/probe.html
@@ -71,10 +74,9 @@ rm /var/www/html/probe.html
 chmod +x /usr/local/bin/bootup.sh
 sudo systemctl daemon-reload
 sudo systemctl enable bootup.service
+sudo systemctl enable --now loader.timer
 
 
-# Schedule loader to run every one minute
-(crontab -l ; echo "* * * * * python3 /etc/bootstrap/loader.py")| crontab -
 
 EOF
 }
