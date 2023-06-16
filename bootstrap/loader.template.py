@@ -1,13 +1,19 @@
 import hashlib
 import logging
+from logging.handlers import TimedRotatingFileHandler
+import datetime
 
-# Configure logging to send messages to both console and file
+# Create a filename with the current date
+current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+log_filename = f"/var/log/bootstrap/logfile_{current_date}.log"
+
+# Configure logging to send messages to both console and log file, and keep only last 30 copies
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),  # Sends logs to console
-        logging.FileHandler("/var/log/bootstrap/logfile.log")  # Sends logs to file
+        TimedRotatingFileHandler(log_filename, when="D", backupCount=30)  # Sends logs to a rotating file
     ]
 )
 
