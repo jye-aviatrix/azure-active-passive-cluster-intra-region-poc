@@ -8,7 +8,7 @@ A public load balancer is created, using these three nodes as backend, a HTTP pr
 
 An ordered list (file name: nodes_info.json) of all nodes and their name /private IP/ public IP is also bootstrap to each node. 
 
-A bootup.service is scheduled to run each time when the nodes boot up, it will delete /var/www/html/probe.html to make sure each node always start as passive node.
+A bootup.service is scheduled to run each time when the nodes boot up, it will delete /var/www/html/probe.html and <node>.html to make sure each node always start as passive node.
 
 A loader.py is scheduled to run every 20 seconds on each nodes using timer service. Timer service is used to ensure that all nodes will be executing the script at the same time at 0, 20, 40 seconds of each minute, as long as their clock is in sync.
 
@@ -22,14 +22,20 @@ This python script does the following:
     - Calculate what number is required to get majority quorum 
     - From each node, perform connectivity test against rest of the nodes
         - The test is done using public IP, but very easy to change to use private IP
-        - Public IP would be helpful for cross region or even cross CSP        
-    - node will compose a new ordered list including itself, as well as all other reachable nodes
-    - node will check if the count of the new ordered list is greater than or equal to required majority quorum.
-        - If no, than node will delete /var/www/html/probe.html to make sure it self is a passive node
+        - Public IP would be helpful for cross region or even cross CSP
+        - When local node, eg node1, can see remote node eg: node3, it will create /var/www/html/node3.html to let node3 know that local can see node3. Otherwise, it will make sure node3.html doesn't exist.
+        - Similarly, when node3 can reach node1, it will also create /var/www/html/node1.html to let node1 know that node3 can see it
+        - This is to ensure there are bi-directional visibility, without bi-directional validation, following scenario could happen:
+            - node1 would have a security group block node2 incoming connection, but node1 can still talk to node2 and node3, so it will think it's the active node
+            - node2 cannot talk to node1, but it can see node3, so it also think itself is the active node
+        - Only when confirmed both nodes can see each other, the remote node IP will be added to reachable nodes list
+    - Local node will compose a new ordered list including itself, as well as all other reachable nodes
+    - Local node will check, if the count of the new ordered list is greater than or equal to required majority quorum.
+        - If no, than local node will delete /var/www/html/probe.html to make sure it self is a passive node
         - If yes
-            - Node will check if itself is the first element of the new ordered list
-                - If yes, the node will create /var/www/html/probe.html, which will make itself an Active node
-                - If no, the node will delete /var/www/html/probe.html to make sure it self is a passive node
+            - Local node will check if itself is the first element of the new ordered list
+                - If yes, the local node will create /var/www/html/probe.html, which will make itself an Active node
+                - If no, the local node will delete /var/www/html/probe.html to make sure it self is a passive node
 
 
 ## Testing
@@ -72,32 +78,67 @@ This python script does the following:
 
     ```
     ubuntu@node1:~$ tail -f /var/log/bootstrap/logfile.log
-    2023-06-09 15:55:02,115 - INFO - Require minimum 2 majority nodes to vote who's the active node
-    2023-06-09 15:55:02,115 - INFO - Node Name: node1 with public IP: 74.235.46.212 is local, skip
-    2023-06-09 15:55:02,115 - INFO - Node Name: node2 with public IP: 74.235.47.70 is remote, perform connectivity test
-    2023-06-09 15:55:02,121 - INFO - HTTP Connectivity is successful to 74.235.47.70
-    2023-06-09 15:55:02,121 - INFO - Node Name: node3 with public IP: 74.235.47.131 is remote, perform connectivity test
-    2023-06-09 15:55:02,126 - INFO - HTTP Connectivity is successful to 74.235.47.131
-    2023-06-09 15:55:02,126 - INFO - All reachable nodes (including local node): ['74.235.46.212', '74.235.47.70', '74.235.47.131']
-    2023-06-09 15:55:02,126 - INFO - Total reachable nodes 3 is more than or equal to majority nodes 2
-    2023-06-09 15:55:02,126 - INFO - Filtered reachable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.6', 'public_ip': '74.235.46.212'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.4', 'public_ip': '74.235.47.70'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.5', 'public_ip': '74.235.47.131'})]
-    2023-06-09 15:55:02,126 - INFO - Node node1 reachability reach quorum and is preferred, set as active
+    2023-06-16 20:17:40,261 - INFO - File loader.tmp.py downloaded successfully.
+    2023-06-16 20:17:40,262 - INFO - File loader.py and loader.tmp.py is identical, no need to overwrite.
+    2023-06-16 20:17:40,361 - INFO - Reading instance metadata service
+    2023-06-16 20:17:40,379 - INFO - Local node name: node1
+    2023-06-16 20:17:40,380 - INFO - Local node private IP: 10.0.0.4
+    2023-06-16 20:17:40,380 - INFO - Reading load balancer metadata service
+    2023-06-16 20:17:40,392 - INFO - Local node public IP: 52.170.214.132
+    2023-06-16 20:17:40,394 - INFO - List of nodes in cluster: ['node1', 'node2', 'node3']
+    2023-06-16 20:17:40,394 - INFO - There are total: 3 nodes in the cluster
+    2023-06-16 20:17:40,395 - INFO - Require minimum 2 majority nodes to vote who's the active node
+    2023-06-16 20:17:40,395 - INFO - Node Name: node1 with public IP: 52.170.214.132 is local, skip
+    2023-06-16 20:17:40,396 - INFO - Node Name: node2 with public IP: 52.170.214.141 is remote, perform connectivity test
+    2023-06-16 20:17:40,402 - INFO - HTTP Connectivity is successful to 52.170.214.141
+    2023-06-16 20:17:40,403 - INFO - Able to reach node2, creating /var/www/html/node2.html to let remote know connection from local to remote works
+    2023-06-16 20:17:40,404 - INFO - Now check if remote can see local by lookup node2.html on node1
+    2023-06-16 20:17:40,410 - INFO - Confirmed 52.170.214.141 can see node1
+    2023-06-16 20:17:40,410 - INFO - Both node1 and node2 can see each other, add remote public IP to reachable list
+    2023-06-16 20:17:40,411 - INFO - Node Name: node3 with public IP: 40.121.66.148 is remote, perform connectivity test
+    2023-06-16 20:17:40,415 - INFO - HTTP Connectivity is successful to 40.121.66.148
+    2023-06-16 20:17:40,415 - INFO - Able to reach node3, creating /var/www/html/node3.html to let remote know connection from local to remote works
+    2023-06-16 20:17:40,416 - INFO - Now check if remote can see local by lookup node3.html on node1
+    2023-06-16 20:17:40,421 - INFO - Confirmed 40.121.66.148 can see node1
+    2023-06-16 20:17:40,422 - INFO - Both node1 and node3 can see each other, add remote public IP to reachable list
+    2023-06-16 20:17:40,422 - INFO - All reachable nodes (including local node): ['52.170.214.132', '52.170.214.141', '40.121.66.148']
+    2023-06-16 20:17:40,423 - INFO - Total reachable nodes 3 is more than or equal to majority nodes 2
+    2023-06-16 20:17:40,423 - INFO - Filtered reachable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.4', 'public_ip': '52.170.214.132'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.5', 'public_ip': '52.170.214.141'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.6', 'public_ip': '40.121.66.148'})]
+    2023-06-16 20:17:40,423 - INFO - Node node1 reachability reach quorum and is preferred, set as active
     ```
 
     Example of passive node
 
     ```
-    tail -f /var/log/bootstrap/logfile.log
-    2023-06-09 15:57:02,140 - INFO - Node Name: node1 with public IP: 74.235.46.212 is remote, perform connectivity test
-    2023-06-09 15:57:02,145 - INFO - HTTP Connectivity is successful to 74.235.46.212
-    2023-06-09 15:57:02,145 - INFO - Node Name: node2 with public IP: 74.235.47.70 is local, skip
-    2023-06-09 15:57:02,145 - INFO - Node Name: node3 with public IP: 74.235.47.131 is remote, perform connectivity test
-    2023-06-09 15:57:02,150 - INFO - HTTP Connectivity is successful to 74.235.47.131
-    2023-06-09 15:57:02,150 - INFO - All reachable nodes (including local node): ['74.235.46.212', '74.235.47.70', '74.235.47.131']
-    2023-06-09 15:57:02,150 - INFO - Total reachable nodes 3 is more than or equal to majority nodes 2
-    2023-06-09 15:57:02,150 - INFO - Filtered reachable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.6', 'public_ip': '74.235.46.212'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.4', 'public_ip': '74.235.47.70'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.5', 'public_ip': '74.235.47.131'})]
-    2023-06-09 15:57:02,150 - INFO - Node node2 reachability reach quorum but not preferred, set as passive
-    2023-06-09 15:57:02,150 - INFO - probe.html already does not exist
+    ubuntu@node2:~$ tail -f /var/log/bootstrap/logfile.log
+    2023-06-16 20:17:41,037 - INFO - File loader.tmp.py downloaded successfully.
+    2023-06-16 20:17:41,038 - INFO - File loader.py and loader.tmp.py is identical, no need to overwrite.
+    2023-06-16 20:17:41,128 - INFO - Reading instance metadata service
+    2023-06-16 20:17:41,144 - INFO - Local node name: node2
+    2023-06-16 20:17:41,145 - INFO - Local node private IP: 10.0.0.5
+    2023-06-16 20:17:41,145 - INFO - Reading load balancer metadata service
+    2023-06-16 20:17:41,153 - INFO - Local node public IP: 52.170.214.141
+    2023-06-16 20:17:41,155 - INFO - List of nodes in cluster: ['node1', 'node2', 'node3']
+    2023-06-16 20:17:41,156 - INFO - There are total: 3 nodes in the cluster
+    2023-06-16 20:17:41,156 - INFO - Require minimum 2 majority nodes to vote who's the active node
+    2023-06-16 20:17:41,156 - INFO - Node Name: node1 with public IP: 52.170.214.132 is remote, perform connectivity test
+    2023-06-16 20:17:41,162 - INFO - HTTP Connectivity is successful to 52.170.214.132
+    2023-06-16 20:17:41,163 - INFO - Able to reach node1, creating /var/www/html/node1.html to let remote know connection from local to remote works
+    2023-06-16 20:17:41,163 - INFO - Now check if remote can see local by lookup node1.html on node2
+    2023-06-16 20:17:41,168 - INFO - Confirmed 52.170.214.132 can see node2
+    2023-06-16 20:17:41,169 - INFO - Both node2 and node1 can see each other, add remote public IP to reachable list
+    2023-06-16 20:17:41,169 - INFO - Node Name: node2 with public IP: 52.170.214.141 is local, skip
+    2023-06-16 20:17:41,170 - INFO - Node Name: node3 with public IP: 40.121.66.148 is remote, perform connectivity test
+    2023-06-16 20:17:41,175 - INFO - HTTP Connectivity is successful to 40.121.66.148
+    2023-06-16 20:17:41,176 - INFO - Able to reach node3, creating /var/www/html/node3.html to let remote know connection from local to remote works
+    2023-06-16 20:17:41,176 - INFO - Now check if remote can see local by lookup node3.html on node2
+    2023-06-16 20:17:41,181 - INFO - Confirmed 40.121.66.148 can see node2
+    2023-06-16 20:17:41,182 - INFO - Both node2 and node3 can see each other, add remote public IP to reachable list
+    2023-06-16 20:17:41,182 - INFO - All reachable nodes (including local node): ['52.170.214.132', '52.170.214.141', '40.121.66.148']
+    2023-06-16 20:17:41,182 - INFO - Total reachable nodes 3 is more than or equal to majority nodes 2
+    2023-06-16 20:17:41,183 - INFO - Filtered reachable ordered nodes [('node1', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node1-nic', 'private_ip': '10.0.0.4', 'public_ip': '52.170.214.132'}), ('node2', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node2-nic', 'private_ip': '10.0.0.5', 'public_ip': '52.170.214.141'}), ('node3', {'ip_configuration_name': 'default', 'network_interface_id': '/subscriptions/7a7e6878-73b9-4432-9e54-6cf31c0aa6f5/resourceGroups/active-passive-cluster/providers/Microsoft.Network/networkInterfaces/node3-nic', 'private_ip': '10.0.0.6', 'public_ip': '40.121.66.148'})]
+    2023-06-16 20:17:41,183 - INFO - Node node2 reachability reach quorum but not preferred, set as passive
+    2023-06-16 20:17:41,184 - INFO - probe.html already does not exist
     ```
 
 - To run the loader.py locally to debug
@@ -107,14 +148,5 @@ This python script does the following:
     exec(open('/etc/bootstrap/loader.py').read())
     ```
 ## Room for improvement
-- Currently the connectivity test is only outbound from local node to other two nodes
-- A potential situation would be:
-    - Node1 have a network security group block incoming connection from node2
-    - Node1 still can reach both other two nodes, since it's in the top of reachable ordered list (include itself), it will decide itself as active
-    - Node2 cannot reach node1, but can still reach node3, so the total count of reachable ordered list (include itself) is 2 and equal to required majority quorum, so node2 will decide it's also active
-    - To solve this problem, we need proper communication between each nodes
-        - Node1 will check if it can reach node2, and send this information to node2
-        - Node2 will check if it can reach node1, and also send this information to node1
-        - Both side will only consider bi-directional connectivity is working, if it has confirmed both outbound and inbound (from it's neighbors)'s connectivity
 - We are using a static ordered list where it always goes ['node1','node2','node3'], node3 is always at the bottom of the list so even when reaches quorum, it will never become active. If a new ordered list, such as ['node3','node1','node2'] is required, an mechanism of updating the list order on the active node, make sure it gets properly synced to the remaining nodes, before the new order take effect will be necessary.
 - On the flip side, since the last node in the ordered list will never become active, we can use a very small instance size for the last node, and doesn't need to run any services.
