@@ -148,7 +148,7 @@ def check_http(public_ip):
     url = f"http://{public_ip}"
 
     try:
-        response = requests.get(url,timeout=5)
+        response = requests.get(url,timeout=3)
         if response.status_code == 200:
             logging.info("HTTP Connectivity is successful to %s", public_ip)
             return True
@@ -158,6 +158,21 @@ def check_http(public_ip):
     except requests.exceptions.RequestException as e:
         logging.error("An error occurred while connecting to %s, error: %s", public_ip, str(e))
         return False
+    
+def confirm_remote_also_can_see_local(remote_public_ip,local_node_name):
+    url = f"http://{remote_public_ip}/{local_node_name}.html"
+
+    try:
+        response = requests.get(url,timeout=3)
+        if response.status_code == 200:
+            logging.info("Confirmed %s can see %s", remote_public_ip, local_node_name)
+            return True
+        else:
+            logging.error("Unable to confirm %s can see %s with status code: %s", remote_public_ip, local_node_name, response.status_code)
+            return False
+    except requests.exceptions.RequestException as e:
+        logging.error("An error occurred while connecting to %s, error: %s", remote_public_ip, str(e))
+        return False
 
 total_nodes_count = len(node_names)
 logging.info("There are total: %s nodes in the cluster", total_nodes_count)
@@ -165,9 +180,12 @@ logging.info("There are total: %s nodes in the cluster", total_nodes_count)
 majority_nodes_count = (total_nodes_count + 1) // 2
 logging.info("Require minimum %s majority nodes to vote who's the active node", majority_nodes_count)
 
+import os
 
 reachable_nodes_public_ips=[]
+html_directory = '/var/www/html/'
 for remote_node_name, remote_node_info in ordered_nodes_info:
+    html_file_path = os.path.join(html_directory, f'{remote_node_name}.html')
     remote_public_ip = remote_node_info['public_ip']
     if remote_public_ip == local_node_public_ip:
         logging.info("Node Name: %s with public IP: %s is local, skip", remote_node_name,remote_public_ip)
@@ -175,13 +193,22 @@ for remote_node_name, remote_node_info in ordered_nodes_info:
         reachable_nodes_public_ips.append(remote_public_ip)
     else:
         logging.info("Node Name: %s with public IP: %s is remote, perform connectivity test", remote_node_name,remote_public_ip)
-        if check_http(remote_public_ip):            
-
-            reachable_nodes_public_ips.append(remote_public_ip)
+        if check_http(remote_public_ip):
+            logging.info("Able to reach %s, creating %s to let remote know connection from local to remote works",remote_node_name, html_file_path )
+            shutil.copy2("/etc/bootstrap/probe.html", html_file_path)
+            logging.info("Now check if remote can see local by lookup %s.html on %s", remote_node_name, local_node_name)
+            if confirm_remote_also_can_see_local(remote_public_ip, local_node_name):
+                logging.info("Both %s and %s can see each other, add remote public IP to reachable list", local_node_name, remote_node_name)
+                reachable_nodes_public_ips.append(remote_public_ip)
+        else:
+            logging.info("Unable to reach %s, make sure %s doesn't exist",remote_node_name, html_file_path )
+            if os.path.exists(html_file_path):
+                os.remove(html_file_path)
+                logging.info("%s deleted", html_file_path)
 
 logging.info("All reachable nodes (including local node): %s", reachable_nodes_public_ips)
 
-import os
+
 
 if len(reachable_nodes_public_ips) >= majority_nodes_count:
     logging.info("Total reachable nodes %s is more than or equal to majority nodes %s", len(reachable_nodes_public_ips),majority_nodes_count)
