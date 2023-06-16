@@ -33,13 +33,13 @@ resource "azurerm_storage_blob" "probe" {
 
 
 resource "azurerm_storage_blob" "bootup" {
-  name                   = "bootstrap/bootup.sh"
+  name                   = "bootstrap/bootup.py"
   storage_account_name   = azurerm_storage_account.this.name
   storage_container_name = "$web"
   type                   = "Block"
-  content_type           = "text/x-sh"
-  source                 = "./bootstrap/bootup.sh"
-  content_md5            = filemd5("./bootstrap/bootup.sh") # This is important to make sure file change gets updated
+  content_type           = "text/x-python"
+  source                 = "./bootstrap/bootup.py"
+  content_md5            = filemd5("./bootstrap/bootup.py") # This is important to make sure file change gets updated
 }
 
 resource "azurerm_storage_blob" "bootup_service" {

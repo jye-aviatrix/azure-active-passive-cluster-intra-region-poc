@@ -2,7 +2,7 @@
 Description=Aviatrix Controller startup Script, make sure to probe.html and <node>.html won't exist during startup, so this node will always boot up as passive first.
 
 [Service]
-ExecStart=/usr/local/bin/bootup.sh
+ExecStart=/usr/bin/python3 /etc/bootstrap/bootup.py
 
 [Install]
 WantedBy=default.target

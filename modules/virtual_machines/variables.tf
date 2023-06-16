@@ -56,12 +56,13 @@ sudo apt install apache2 -y
 echo "<h1>${var.vm_name}</h1>" | sudo tee /var/www/html/index.html
 
 # Copy over files
-mkdir /etc/bootstrap/
-mkdir /var/log/bootstrap/
+mkdir -p /etc/bootstrap/
+mkdir -p /var/log/bootstrap/
 wget -O /etc/bootstrap/nodes_info.json ${var.bootstrap_url}nodes_info.json
 wget -O /etc/bootstrap/probe.html ${var.bootstrap_url}probe.html
 wget -O /etc/bootstrap/loader.py ${var.bootstrap_url}loader.py
-wget -O /usr/local/bin/bootup.sh ${var.bootstrap_url}bootup.sh
+wget -O /etc/bootstrap/bootup.py ${var.bootstrap_url}bootup.py
+
 wget -O /etc/systemd/system/bootup.service ${var.bootstrap_url}bootup.service
 wget -O /etc/systemd/system/loader.service ${var.bootstrap_url}loader.service
 wget -O /etc/systemd/system/loader.timer ${var.bootstrap_url}loader.timer
@@ -71,7 +72,6 @@ wget -O /etc/systemd/system/loader.timer ${var.bootstrap_url}loader.timer
 rm /var/www/html/probe.html
 
 # Make sure node start up as passive during each reboot, bootup.sh will delete probe.html, leaving loader.py to determine if the node need to be passive
-chmod +x /usr/local/bin/bootup.sh
 sudo systemctl daemon-reload
 sudo systemctl enable bootup.service
 sudo systemctl enable --now loader.timer
