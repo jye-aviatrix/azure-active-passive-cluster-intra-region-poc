@@ -10,7 +10,10 @@ An ordered list (file name: nodes_info.json) of all nodes and their name /privat
 
 A bootup.service is scheduled to run each time when the nodes boot up, it will delete /var/www/html/probe.html to make sure each node always start as passive node.
 
-A loader.py is scheduled to run every one minute on each nodes using crontab. This python script does the following:
+A loader.py is scheduled to run every 20 seconds on each nodes using timer service. Timer service is used to ensure that all nodes will be executing the script at the same time at 0, 20, 40 seconds of each minute, as long as their clock is in sync.
+
+This python script does the following:
+
 - Download loader.py from storage account static web to make sure it's always up to date
 - Read Azure Instance Metadata service for node name and private IP
 - Read Azure Load Balancer Metadata service for public IP assigned to each node
@@ -113,7 +116,5 @@ A loader.py is scheduled to run every one minute on each nodes using crontab. Th
         - Node1 will check if it can reach node2, and send this information to node2
         - Node2 will check if it can reach node1, and also send this information to node1
         - Both side will only consider bi-directional connectivity is working, if it has confirmed both outbound and inbound (from it's neighbors)'s connectivity
-- We are only checking connectivity every one minutes using cron jobs, which is the shortest time frame cron can support
-    - To have faster detection, a continues running services is necessary to have shorter detection interval
 - We are using a static ordered list where it always goes ['node1','node2','node3'], node3 is always at the bottom of the list so even when reaches quorum, it will never become active. If a new ordered list, such as ['node3','node1','node2'] is required, an mechanism of updating the list order on the active node, make sure it gets properly synced to the remaining nodes, before the new order take effect will be necessary.
 - On the flip side, since the last node in the ordered list will never become active, we can use a very small instance size for the last node, and doesn't need to run any services.
